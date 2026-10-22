@@ -1,0 +1,28 @@
+name: laboratorio-ia-docker
+
+services:
+  n8n:
+    image: n8nio/n8n:2.44.5
+    container_name: laboratorio-n8n
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      TZ: America/Sao_Paulo
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RUNNERS_ENABLED: "true"
+      # Local File Trigger liberado para o exercício; Execute Command permanece bloqueado.
+      NODES_EXCLUDE: '["n8n-nodes-base.executeCommand"]'
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./dados/documentos:/data/documentos
+    networks:
+      - aula
+
+volumes:
+  n8n_data:
+
+networks:
+  aula:
+    name: laboratorio-ia-aula
