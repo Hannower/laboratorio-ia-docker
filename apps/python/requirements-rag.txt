@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+fastembed
+pdfplumber
+pypdf
+tiktoken
+python-dotenv
+requests
