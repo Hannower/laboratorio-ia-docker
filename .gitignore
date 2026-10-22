@@ -1,0 +1,28 @@
+# Segredos locais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dados de aula ficam no computador, não no Git
+/dados/documentos/*
+!/dados/documentos/raw/
+!/dados/documentos/silver/
+!/dados/documentos/gold/
+
+# Dados e backups locais do n8n
+/n8n_data/
+/backups/
+*.backup
+
+# Dependências, caches e build
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+.next/
+dist/
+build/
+.DS_Store
+Thumbs.db
