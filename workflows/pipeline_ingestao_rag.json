@@ -20,7 +20,8 @@
           "add"
         ],
         "options": {
-          "awaitWriteFinish": true
+          "awaitWriteFinish": true,
+          "usePolling": true
         }
       },
       "id": "1c7a840e-749e-4363-8a39-38b463286f05",
@@ -97,7 +98,7 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
