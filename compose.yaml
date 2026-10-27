@@ -20,6 +20,58 @@ services:
     networks:
       - aula
 
+  rag-backend:
+    build:
+      context: ./apps/rag
+      dockerfile: backend/Dockerfile
+    container_name: laboratorio-rag-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: ./apps/rag/.env
+        required: false
+    environment:
+      - DOCUMENTS_DIR=/data/documentos
+    volumes:
+      - ./dados/documentos:/data/documentos
+      - ./apps/rag/data:/app/data
+    networks:
+      - aula
+
+  rag-frontend:
+    build:
+      context: ./apps/rag/frontend
+      dockerfile: Dockerfile
+    container_name: laboratorio-rag-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - rag-backend
+    networks:
+      - aula
+
+  mcp:
+    build:
+      context: ./apps/mcp
+      dockerfile: Dockerfile
+    container_name: laboratorio-mcp
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file:
+      - path: ./apps/mcp/.env
+        required: false
+    environment:
+      - MCP_TRANSPORT=streamable-http
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8001
+    networks:
+      - aula
+
 volumes:
   n8n_data:
 

@@ -1,3 +1,4 @@
-mcp
+mcp>=1.2.0,<2
 python-dotenv
 requests
+psycopg2-binary

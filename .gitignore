@@ -6,10 +6,12 @@
 *.key
 
 # Dados de aula ficam no computador, não no Git
-/dados/documentos/*
-!/dados/documentos/raw/
-!/dados/documentos/silver/
-!/dados/documentos/gold/
+/dados/documentos/raw/*
+!/dados/documentos/raw/.gitkeep
+/dados/documentos/silver/*
+!/dados/documentos/silver/.gitkeep
+/dados/documentos/gold/*
+!/dados/documentos/gold/.gitkeep
 
 # Dados e backups locais do n8n
 /n8n_data/

@@ -1,122 +1,197 @@
-# Laboratório de IA Generativa com Docker
+# 🚀 Laboratório de IA Generativa com Docker
 
-Ambiente didático para reaproveitar projetos da formação em computadores diferentes. O objetivo é manter versões e dependências em contêineres e iniciar os serviços com Docker Compose.
+Ambiente didático completo e integrado para executar projetos de Inteligência Artificial Generativa em contêineres Docker, garantindo paridade de ambiente, versionamento de dependências e orquestração unificada com **Docker Compose**.
 
-## Estado inicial
+---
 
-Esta primeira versão prepara o n8n e a estrutura compartilhada de documentos. Os serviços RAG, Next.js, MCP e agentes serão adicionados quando o código de cada projeto estiver integrado a este repositório.
+## 🏗️ Arquitetura do Laboratório
+
+Todos os serviços compartilham a mesma rede Docker interna (`laboratorio-ia-aula`) e a pasta compartilhada de documentos (`./dados/documentos` montada em `/data/documentos`).
 
 ```text
-aluno/navegador
-      │
-      ├── Next.js (futuro)
-      ├── Backend Python / RAG (futuro) ── Supabase remoto / OpenRouter
-      ├── MCP Streamable HTTP (futuro)
-      └── n8n ── rede Docker compartilhada
-                 └── /data/documentos/{raw,silver,gold}
+               [ Usuário / Navegador / IDE Antigravity ]
+                                  │
+         ┌────────────────────────┼────────────────────────┐
+         │ :3000                  │ :8000                  │ :8001 / stdio
+         ▼                        ▼                        ▼
+ ┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+ │ rag-frontend │ ──────> │ rag-backend  │         │  servidor    │
+ │   (Next.js)  │         │   (FastAPI)  │         │  mcp (Fast)  │
+ └──────────────┘         └──────┬───────┘         └──────┬───────┘
+                                 │                        │
+         ┌───────────────────────┼────────────────────────┤
+         ▼                       ▼                        ▼
+ ┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+ │     n8n      │         │   Supabase   │         │  OpenRouter  │
+ │  Workflows   │         │  (Postgres/  │         │    (LLMs/    │
+ │    :5678     │         │   pgvector)  │         │  Embeddings) │
+ └──────┬───────┘         └──────────────┘         └──────────────┘
+        │                        ▲
+        └───────> /data/documentos ──┘
+                {raw, silver, gold}
 ```
 
-## Requisitos no Windows 11
+---
 
-- Docker Desktop atualizado e iniciado, usando o backend WSL 2.
-- Git para clonar o repositório.
-- Conexão à internet no primeiro início para baixar a imagem do n8n.
-- Recomendado para trabalhar com IDE, navegador e serviços simultâneos: 16 GB de RAM.
+## 📦 Projetos Integrados
 
-Node.js, Python, npm e uv não precisam estar instalados no Windows para os serviços que forem executados em contêineres. O desenvolvimento local fora do Docker pode continuar exigindo essas ferramentas.
+### 1. 🔍 Projeto RAG (Retrieval-Augmented Generation)
+* **Localização:** [`apps/rag/`](file:///c:/ARQUIVOS/Projetos/laboratorio-ia-docker/apps/rag)
+* **Backend (`FastAPI` - Porta `8000`):**
+  * Extração e OCR de documentos fiscais em PDF (`tesseract-ocr`, `pdfplumber`, `pypdfium2`).
+  * Chunking semântico estruturado com metadados fiscais (número da nota, CNPJ, fornecedor, itens e valores).
+  * Geração de vetores locais com `FastEmbed` (`BAAI/bge-small-en-v1.5`, 384 dimensões).
+  * Persistência vetorial no **Supabase (pgvector)** com fallback automático para vetor local JSON (`local_vector_store.json`).
+  * Chat e respostas inteligentes contextualizadas com LLMs via **OpenRouter**.
+  * **Ingestão integrada:** Monitora e processa notas fiscais em [`./dados/documentos/raw`](file:///c:/ARQUIVOS/Projetos/laboratorio-ia-docker/dados/documentos/raw) e as promove para [`./dados/documentos/gold`](file:///c:/ARQUIVOS/Projetos/laboratorio-ia-docker/dados/documentos/gold).
+* **Frontend (`Next.js` - Porta `3000`):**
+  * Dashboard moderno e responsivo para visualização das faturas cadastradas.
+  * Chat RAG interativo com respostas fundamentadas e visualização de citações/chunks.
+  * Botão de disparo para ingestão em lote e upload de novos PDFs.
 
-## Iniciar
+### 2. 🔌 Projeto MCP (Model Context Protocol)
+* **Localização:** [`apps/mcp/`](file:///c:/ARQUIVOS/Projetos/laboratorio-ia-docker/apps/mcp)
+* **Servidor FastMCP (Porta `8001` no Docker ou via `stdio`):**
+  * Atua como uma ponte padronizada de ferramentas (tools) para agentes de IA (como Antigravity IDE, Cursor e Claude Desktop).
+  * Disponibiliza a ferramenta `listar_chunks_rag` para que o agente consulte chunks e dados fiscais diretamente no PostgreSQL do Supabase via `psycopg2`.
+  * **Modo Dual:** Executa como serviço HTTP Streamable (`streamable-http`) na rede Docker e como processo `stdio` para integração nativa com IDEs locais.
 
-No PowerShell, na pasta clonada:
+### 3. ⚙️ Orquestrador n8n
+* **Porta:** `5678`
+* Automação de fluxos com nós de monitoramento de arquivos (`Local File Trigger`) mapeados em `/data/documentos/raw` para acionar a API do RAG (`http://rag-backend:8000`).
 
+---
+
+## 🛠️ Pré-requisitos
+
+1. **Docker Desktop** instalado com suporte a WSL 2 e em execução.
+2. **Git** para clonar o repositório.
+3. Chaves de API das plataformas externas:
+   * **Supabase:** URL do projeto e Service Role / Anon Key, além da string de conexão PostgreSQL.
+   * **OpenRouter:** Chave de API para inferência de LLM.
+
+---
+
+## 🚀 Passo a Passo para Execução
+
+### Passo 1: Clonar o Repositório
+Abra o terminal (PowerShell ou Bash) e clone o repositório:
+```bash
+git clone https://github.com/proftheosilva/laboratorio-ia-docker.git
+cd laboratorio-ia-docker
+```
+
+### Passo 2: Configurar as Variáveis de Ambiente
+
+1. **Configurar o RAG:**
+   Crie o arquivo `.env` dentro de `apps/rag/` a partir do modelo de exemplo:
+   ```powershell
+   Copy-Item apps/rag/.env.example apps/rag/.env
+   ```
+   Edite `apps/rag/.env` com as suas credenciais:
+   ```env
+   SUPABASE_URL=https://seu-projeto.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=sua_chave_anonima
+   SUPABASE_SECRET_KEY=sua_chave_service_role
+   OPENROUTER_API_KEY=sua_chave_openrouter
+   ```
+
+2. **Configurar o MCP:**
+   Crie o arquivo `.env` dentro de `apps/mcp/`:
+   ```powershell
+   Copy-Item apps/mcp/.env.example apps/mcp/.env
+   ```
+   Edite `apps/mcp/.env` adicionando a string de conexão do PostgreSQL do Supabase:
+   ```env
+   DATABASE_URL=postgresql://postgres.seu-projeto:sua-senha@seu-host:5432/postgres
+   ```
+
+### Passo 3: Iniciar o Ambiente com Docker Compose
+Na raiz do repositório, execute o comando para construir as imagens e iniciar todos os contêineres em segundo plano:
 ```powershell
-Copy-Item .env.example .env
-docker compose up -d
+docker compose up --build -d
 ```
 
-Abra http://localhost:5678 e conclua a criação da conta local do n8n. Para acompanhar:
-
+### Passo 4: Acompanhar os Serviços
+Para verificar o status dos contêineres:
 ```powershell
 docker compose ps
-docker compose logs -f n8n
 ```
-
-Para parar sem remover os dados persistidos:
-
+Para visualizar os logs em tempo real:
 ```powershell
-docker compose down
+docker compose logs -f
 ```
 
-Não use `docker compose down -v` se quiser preservar os workflows, credenciais e dados locais do n8n.
+---
 
-## Pastas de dados da turma
+## 🌐 Endpoints e Portas
 
-Os diretórios `dados/documentos/raw`, `silver` e `gold` são compartilhados com o contêiner n8n em `/data/documentos`. Os alunos podem trazer os arquivos de exercício em pendrive ou copiá-los do Drive para `raw`.
+| Serviço | URL de Acesso | Descrição |
+| :--- | :--- | :--- |
+| **Frontend RAG** | [http://localhost:3000](http://localhost:3000) | Interface do usuário e chat RAG |
+| **Backend RAG (API Docs)** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger interativo da API FastAPI |
+| **Backend RAG (Health)** | [http://localhost:8000/api/health](http://localhost:8000/api/health) | Status do RAG, vetores e documentos |
+| **Servidor MCP** | [http://localhost:8001/mcp](http://localhost:8001/mcp) | Endpoint HTTP Streamable do servidor MCP |
+| **Orquestrador n8n** | [http://localhost:5678](http://localhost:5678) | Painel de workflows do n8n |
 
-- **raw**: arquivos de origem ainda não tratados.
-- **silver**: resultados da transformação básica, quando a etapa ETL for introduzida.
-- **gold**: dados preparados para consumo no laboratório.
+---
 
-Criar essas pastas é uma preparação de organização. A movimentação de um arquivo, por si só, não executa limpeza, validação ou ETL. Não coloque dados pessoais, documentos confidenciais nem credenciais reais nos exemplos do repositório público.
+## 📂 Pastas Compartilhadas de Dados
 
-## Organização prevista
+O diretório local [`dados/documentos/`](file:///c:/ARQUIVOS/Projetos/laboratorio-ia-docker/dados/documentos) é compartilhado com os contêineres via volume Docker (`/data/documentos`):
 
-- `frontend/`: interface Next.js, adicionada quando o frontend for integrado.
-- `backend/`: API Python e aplicação RAG.
-- `mcp/`: servidor MCP, inicialmente com transporte HTTP na rede Docker.
-- `workflows/`: exportações de workflows n8n sem segredos.
-- `dados/documentos/raw|silver|gold/`: dados de exercício locais, ignorados pelo Git.
-- `compose.yaml`: serviços, rede e volumes.
+* **`dados/documentos/raw`**: Coloque aqui os arquivos PDF brutos para ingestão.
+* **`dados/documentos/silver`**: Destinado aos dados pós-limpeza e validação (ETL intermediário).
+* **`dados/documentos/gold`**: Destino final dos documentos cujos chunks e metadados foram ingeridos com sucesso no banco de dados.
 
-## Persistência e troca de computador
+> 💡 **Gerar faturas fictícias para teste:**  
+> Caso queira gerar novos PDFs de teste, execute na pasta do RAG:
+> ```powershell
+> python apps/rag/generate_invoices.py
+> ```
+> O script colocará automaticamente as novas faturas em `./dados/documentos/raw`.
 
-Git guarda código e configurações versionadas. O volume Docker `n8n_data` guarda workflows, credenciais e estado do n8n na máquina local; ele não acompanha um clone do Git.
+---
 
-Para continuar em outro computador:
+## 🔌 Conectando o MCP ao Antigravity IDE ou Cursor
 
-1. Clone este repositório.
-2. Copie os arquivos de exercício do pendrive ou do Drive para `dados/documentos`.
-3. Recrie o arquivo `.env` usando `.env.example`.
-4. Inicie com `docker compose up -d`.
-5. Importe os workflows versionados em `workflows/` e configure as credenciais próprias daquele computador.
+Caso prefira utilizar o servidor MCP localmente diretamente conectado à IDE (transporte `stdio`):
 
-Se for necessário recuperar o estado completo do n8n, faça backup do volume `n8n_data` e da chave de criptografia da instância. Não publique esse backup nem a chave. As credenciais podem ser criptografadas e não são portáveis sem a chave correspondente.
+No arquivo de configuração de servidores MCP da IDE (ou em `.agents/mcp_config.json`):
+```json
+{
+  "mcpServers": {
+    "mcp-supabase": {
+      "command": "python",
+      "args": [
+        "c:/ARQUIVOS/Projetos/laboratorio-ia-docker/apps/mcp/server.py"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://postgres.seu-projeto:sua-senha@seu-host:5432/postgres"
+      }
+    }
+  }
+}
+```
 
-## Rede dos contêineres
+---
 
-Os serviços conectam-se pelo nome do serviço dentro da rede Compose, por exemplo `http://backend:8000` e `http://mcp:8001/mcp`. O navegador no Windows usa as portas publicadas em `localhost`. Não use `localhost` dentro de um contêiner para acessar outro serviço: ali, localhost aponta para o próprio contêiner.
+## 🛑 Comandos Úteis do Docker
 
-## Integração RAG + n8n planejada
-
-1. O gatilho de arquivo observa `/data/documentos/raw`.
-2. Um evento de arquivo inicia o fluxo.
-3. O nó HTTP Request chama a API RAG pelo nome do serviço Compose.
-4. O fluxo confirma que a ingestão terminou com sucesso.
-5. A aplicação RAG continua responsável por persistir os registros e mover o original para `gold`.
-
-Apenas um componente deve mover o arquivo para `gold`. O fluxo deve tratar arquivo ainda em cópia, eventos repetidos, nomes duplicados e falhas parciais. O Local File Trigger é um recurso de n8n auto-hospedado e precisa de configuração deliberada.
-
-## Etapas seguintes da formação
-
-- **Data Lake**: apresentar a estrutura raw/gold e as regras de armazenamento.
-- **ETL/ELT**: acrescentar silver e transformações verificáveis.
-- **Agentes**: incorporar LangChain e memória como serviços opcionais, com credenciais separadas.
-- **Integração final**: conectar frontend, API RAG, MCP, n8n e agentes pela rede Compose, ativando apenas os serviços da aula.
-
-Consulte `docs/PLANO.md` para o desenho incremental.
-
-## Segurança didática
-
-- `.env`, documentos de exercício, credenciais n8n e estado local ficam fora do Git.
-- Use chaves com menor privilégio possível e nunca compartilhe chaves secretas em sala, prints, workflows exportados ou commits.
-- Restrinja o n8n à máquina local durante o laboratório; não habilite acesso público sem configurar autenticação e revisar a segurança.
-- O nó Local File Trigger acessa o sistema de arquivos montado. Monte apenas a pasta de dados necessária.
-- Não habilite nós de execução arbitrária de comandos para este exercício.
-
-## Documentação oficial
-
-- [Docker Desktop no Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- [n8n com Docker Compose](https://docs.n8n.io/hosting/installation/docker/)
-- [Local File Trigger](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.localfiletrigger/)
-- [n8n Community Edition](https://docs.n8n.io/hosting/community-edition-features/)
+* **Parar todos os serviços:**
+  ```powershell
+  docker compose down
+  ```
+  *(Os dados persistidos do n8n e os arquivos em `dados/documentos` são preservados).*
+* **Reiniciar apenas um serviço:**
+  ```powershell
+  docker compose restart rag-backend
+  ```
+* **Ver logs de um serviço específico:**
+  ```powershell
+  docker compose logs -f rag-backend
+  ```
+* **Reconstruir imagens após alterações de código:**
+  ```powershell
+  docker compose up --build -d
+  ```
