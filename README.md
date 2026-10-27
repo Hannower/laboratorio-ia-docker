@@ -77,7 +77,7 @@ Todos os serviços compartilham a mesma rede Docker interna (`laboratorio-ia-aul
 ### Passo 1: Clonar o Repositório
 Abra o terminal (PowerShell ou Bash) e clone o repositório:
 ```bash
-git clone https://github.com/proftheosilva/laboratorio-ia-docker.git
+git clone https://github.com/Hannower/laboratorio-ia-docker.git
 cd laboratorio-ia-docker
 ```
 
