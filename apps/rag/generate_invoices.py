@@ -72,6 +72,71 @@ INVOICES = [
         ],
         "valor_total": 16091.00,
         "observacoes": "Aquisicao de bibliografia basica e complementar para a disciplina de Engenharia de Dados e Recuperacao de Informacao."
+    },
+    {
+        "filename": "nota_fiscal_1005.pdf",
+        "numero_nota": "NF-001005",
+        "data_emissao": "15/03/2026",
+        "fornecedor": "AI Hardware Solutions Brasil Ltda",
+        "cnpj": "56.789.012/0001-54",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Placa Aceleradora de IA NVIDIA RTX 4090 24GB GDDR6X", 2, 14500.00, 29000.00),
+            ("Fonte Modular Corsair 1200W 80 Plus Platinum", 2, 1650.00, 3300.00),
+            ("Gabinete Torre E-ATX com Ventilacao Otimizada para Deep Learning", 2, 1200.00, 2400.00),
+        ],
+        "valor_total": 34700.00,
+        "observacoes": "Aquisicao de placas de video e infraestrutura de hardware dedicada para fine-tuning e testes locais de modelos LLM."
+    },
+    {
+        "filename": "nota_fiscal_1006.pdf",
+        "numero_nota": "NF-001006",
+        "data_emissao": "22/03/2026",
+        "fornecedor": "OfficeTech Moveis e Ergonomia Corporativa S.A.",
+        "cnpj": "67.890.123/0001-45",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Cadeira Ergonomica Presidente NR-17 com Apoio de Cabeca", 12, 1250.00, 15000.00),
+            ("Mesa para Estacao de Trabalho Dupla 140x60cm Carvalho", 6, 980.00, 5880.00),
+            ("Suporte Articulado a Gas para Dois Monitores", 12, 280.00, 3360.00),
+        ],
+        "valor_total": 24240.00,
+        "observacoes": "Mobiliario ergonomico para adequacao do novo laboratorio de IA e desenvolvimento pratico de agentes."
+    },
+    {
+        "filename": "nota_fiscal_1007.pdf",
+        "numero_nota": "NF-001007",
+        "data_emissao": "05/04/2026",
+        "fornecedor": "CyberShield Seguranca e Licenciamento de Software",
+        "cnpj": "78.901.234/0001-36",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Licenca Anual Firewall e Protecao Endpoint EDR Corporativo (50 hosts)", 1, 12800.00, 12800.00),
+            ("Certificado Digital SSL/TLS Wildcard Validade 2 Anos", 2, 1450.00, 2900.00),
+            ("Consultoria e Analise de Vulnerabilidades em Ambientes Docker", 1, 8500.00, 8500.00),
+        ],
+        "valor_total": 24200.00,
+        "observacoes": "Servicos de seguranca da informacao, protecao de perimetros de rede e homologacao de conteineres Docker."
+    },
+    {
+        "filename": "nota_fiscal_1008.pdf",
+        "numero_nota": "NF-001008",
+        "data_emissao": "18/04/2026",
+        "fornecedor": "SmartCoffee & Vending Suprimentos Alimenticios Ltda",
+        "cnpj": "89.012.345/0001-27",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Cafeteira Espresso Industrial em Graos Automatica", 1, 6400.00, 6400.00),
+            ("Cafe Gourmet em Graos Torrado 100% Arabica (Fardo 10kg)", 4, 480.00, 1920.00),
+            ("Frigobar Inox 120 Litros 110V Eficiencia Energetica A", 2, 1550.00, 3100.00),
+            ("Copo Termico Inox Personalizado Turma IA 473ml", 40, 45.00, 1800.00),
+        ],
+        "valor_total": 13220.00,
+        "observacoes": "Itens de copa e conveniencia destinados ao espaco de convivencia e hackathons do Laboratorio de IA."
     }
 ]
 
