@@ -59,6 +59,7 @@ Todos os serviços compartilham a mesma rede Docker interna (`laboratorio-ia-aul
 ### 3. ⚙️ Orquestrador n8n
 * **Porta:** `5678`
 * Automação de fluxos com nós de monitoramento de arquivos (`Local File Trigger`) mapeados em `/data/documentos/raw` para acionar a API do RAG (`http://rag-backend:8000`).
+* **Workflow pronto:** O projeto já inclui o arquivo de fluxo pronto para importação em [`workflows/pipeline_ingestao_rag.json`](workflows/pipeline_ingestao_rag.json).
 
 ---
 
@@ -121,6 +122,24 @@ Para visualizar os logs em tempo real:
 ```powershell
 docker compose logs -f
 ```
+
+### Passo 5: Carregar a Automação no n8n
+Como o banco de dados do n8n é persistido em um volume Docker local (`n8n_data`), ao clonar o projeto em um novo computador o n8n inicializa limpo. O modelo de workflow já acompanha o repositório em [`workflows/pipeline_ingestao_rag.json`](workflows/pipeline_ingestao_rag.json).
+
+Para carregá-lo na sua instância do n8n, escolha uma das opções:
+
+* **Opção A (Pela Interface Web - Recomendado):**
+  1. Acesse [http://localhost:5678](http://localhost:5678) e conclua a criação do seu usuário local.
+  2. No painel de **Workflows**, clique no menu de três pontinhos `...` (canto superior direito) e selecione **Import from File**.
+  3. Selecione o arquivo `workflows/pipeline_ingestao_rag.json`.
+  4. Mude a chave no canto superior direito para **Active** para deixá-lo monitorando a pasta `raw` em segundo plano.
+
+* **Opção B (Via Terminal - Rápido):**
+  Execute na raiz do projeto:
+  ```powershell
+  docker compose cp workflows/pipeline_ingestao_rag.json n8n:/tmp/workflow.json
+  docker compose exec n8n n8n import:workflow --input=/tmp/workflow.json
+  ```
 
 ---
 
