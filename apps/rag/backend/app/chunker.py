@@ -95,6 +95,31 @@ def chunk_document(
                 "token_count": tok_item["token_count"],
                 "tokens_visual": tok_item["tokens_visual"]
             })
+    else:
+        # Fallback de segurança: extrai trecho de itens do raw_text para nunca deixar a nota sem produtos
+        raw_upper = raw_text.upper()
+        start_idx = raw_upper.find("ITENS DA NOTA")
+        if start_idx != -1:
+            end_idx = raw_upper.find("OBSERVA", start_idx)
+            if end_idx == -1:
+                end_idx = raw_upper.find("VALOR TOTAL", start_idx)
+            items_raw = raw_text[start_idx:end_idx].strip() if end_idx != -1 else raw_text[start_idx:].strip()
+        else:
+            items_raw = raw_text
+
+        chunk_idx = len(chunks)
+        items_content = f"Itens e Produtos da Nota {invoice_number}:\n{items_raw}"
+        tok_fallback = tokenize_text(items_content)
+        chunks.append({
+            "chunk_id": f"{doc_id}_chunk_{chunk_idx}",
+            "doc_id": doc_id,
+            "invoice_number": invoice_number,
+            "chunk_index": chunk_idx,
+            "chunk_type": "invoice_items",
+            "content": items_content,
+            "token_count": tok_fallback["token_count"],
+            "tokens_visual": tok_fallback["tokens_visual"]
+        })
 
     # Chunk Final: Observações e Informações complementares
     # Procura seção de observações no texto bruto

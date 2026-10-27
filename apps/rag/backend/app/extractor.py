@@ -125,13 +125,21 @@ def parse_invoice_fields(text: str) -> Dict[str, Any]:
         except ValueError:
             pass
 
-    # Extração de itens (linhas com descrição e valores)
+    # Extração de itens (suporta linha única ou descrição quebrada em múltiplas linhas)
     lines = text.splitlines()
+    pending_desc = ""
     for line in lines:
-        # Padrão: Descrição Qtd R$ Valor_Unit R$ Valor_Total
-        item_match = re.search(r"^(.+?)\s+(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line.strip())
+        line_clean = line.strip()
+        if not line_clean:
+            continue
+
+        # Caso 1: Descrição e valores na mesma linha
+        item_match = re.search(r"^(.+?)\s+(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line_clean)
         if item_match:
             desc = item_match.group(1).strip()
+            if pending_desc:
+                desc = f"{pending_desc} {desc}".strip()
+                pending_desc = ""
             qtd = int(item_match.group(2))
             v_unit = float(item_match.group(3).replace('.', '').replace(',', '.'))
             v_total = float(item_match.group(4).replace('.', '').replace(',', '.'))
@@ -141,5 +149,33 @@ def parse_invoice_fields(text: str) -> Dict[str, Any]:
                 "valor_unitario": v_unit,
                 "valor_total": v_total
             })
+            continue
+
+        # Caso 2: Linha apenas com Quantidade e Valores (descrição estava na linha anterior)
+        multi_match = re.search(r"^(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line_clean)
+        if multi_match and pending_desc:
+            qtd = int(multi_match.group(1))
+            v_unit = float(multi_match.group(2).replace('.', '').replace(',', '.'))
+            v_total = float(multi_match.group(3).replace('.', '').replace(',', '.'))
+            fields["itens"].append({
+                "descricao": pending_desc.strip(),
+                "quantidade": qtd,
+                "valor_unitario": v_unit,
+                "valor_total": v_total
+            })
+            pending_desc = ""
+            continue
+
+        # Cabeçalhos e rodapés da tabela limpam o buffer
+        upper_line = line_clean.upper()
+        if "ITENS DA NOTA" in upper_line or "DESCRIÇÃO" in upper_line or "VALOR TOTAL" in upper_line or "OBSERVAÇÕES" in upper_line:
+            pending_desc = ""
+            continue
+
+        # Se for texto continuado entre itens
+        if fields["itens"] and not pending_desc and "DOCUMENTO" not in upper_line and "PÁGINA" not in upper_line:
+            fields["itens"][-1]["descricao"] = f"{fields['itens'][-1]['descricao']} {line_clean}".strip()
+        else:
+            pending_desc = f"{pending_desc} {line_clean}".strip() if pending_desc else line_clean
 
     return fields
