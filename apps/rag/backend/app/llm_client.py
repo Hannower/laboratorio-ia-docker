@@ -88,29 +88,49 @@ def call_llm(augmented_prompt: str) -> Dict[str, Any]:
         "max_tokens": 800
     }
 
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=30
-        )
-        if response.status_code == 200:
-            data = response.json()
-            choice = data.get("choices", [{}])[0]
-            answer = choice.get("message", {}).get("content", "").strip()
-            return {
-                "answer": answer,
-                "model_used": data.get("model", OPENROUTER_MODEL),
-                "usage": data.get("usage", {})
-            }
-        else:
+    for attempt in range(2):
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=35
+            )
+            if response.status_code == 200:
+                data = response.json()
+                choices = data.get("choices", [])
+                if choices:
+                    msg = choices[0].get("message", {})
+                    raw_content = msg.get("content")
+                    if raw_content is None:
+                        raw_content = msg.get("reasoning") or choices[0].get("text") or ""
+                    answer = str(raw_content).strip()
+                    if answer:
+                        return {
+                            "answer": answer,
+                            "model_used": data.get("model", OPENROUTER_MODEL),
+                            "usage": data.get("usage", {})
+                        }
+            if attempt == 0:
+                import time
+                time.sleep(1.5)
+                continue
             return {
                 "error": f"Erro OpenRouter HTTP {response.status_code}: {response.text}",
                 "answer": f"Falha na comunicação com o LLM (Status {response.status_code})"
             }
-    except Exception as e:
-        return {
-            "error": str(e),
-            "answer": f"Exceção ao chamar LLM: {str(e)}"
-        }
+        except Exception as e:
+            if attempt == 0:
+                import time
+                time.sleep(1.5)
+                continue
+            return {
+                "error": str(e),
+                "answer": f"Exceção ao chamar LLM: {str(e)}"
+            }
+
+    return {
+        "error": "Tentativas de comunicação com o LLM esgotadas",
+        "answer": "Falha na comunicação com o LLM."
+    }
+

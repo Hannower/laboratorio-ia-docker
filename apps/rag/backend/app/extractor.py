@@ -125,57 +125,117 @@ def parse_invoice_fields(text: str) -> Dict[str, Any]:
         except ValueError:
             pass
 
-    # Extração de itens (suporta linha única ou descrição quebrada em múltiplas linhas)
-    lines = text.splitlines()
-    pending_desc = ""
-    for line in lines:
-        line_clean = line.strip()
-        if not line_clean:
-            continue
+    # Extração de itens (suporta linha única, descrição em múltiplas linhas e tabelas estruturadas)
+    m_block = re.search(r'ITENS DA NOTA FISCAL.*?\n(.*?)VALOR TOTAL DA NOTA', text, re.DOTALL | re.IGNORECASE)
+    if not m_block:
+        m_block = re.search(r'ITENS DA NOTA FISCAL.*?\n(.*?)VALOR TOTAL', text, re.DOTALL | re.IGNORECASE)
 
-        # Caso 1: Descrição e valores na mesma linha
-        item_match = re.search(r"^(.+?)\s+(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line_clean)
-        if item_match:
-            desc = item_match.group(1).strip()
-            if pending_desc:
-                desc = f"{pending_desc} {desc}".strip()
+    if m_block:
+        block = m_block.group(1).strip()
+        raw_lines = [l.strip() for l in block.splitlines() if l.strip()]
+
+        # Ignora linhas de cabeçalho da tabela
+        lines = []
+        for l in raw_lines:
+            u = l.upper()
+            if 'DESCRIÇÃO DO PRODUTO' in u or ('QTD' in u and 'VALOR' in u):
+                continue
+            lines.append(l)
+
+        pending_lines = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
+            # Caso 1: Linha completa (Descrição e valores na mesma linha)
+            m_full = re.search(r'^(.+?)\s+(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$', line)
+            if m_full:
+                desc = m_full.group(1).strip()
+                if pending_lines:
+                    desc = ' '.join(pending_lines) + ' ' + desc
+                    pending_lines = []
+                qtd = int(m_full.group(2))
+                v_unit = float(m_full.group(3).replace('.', '').replace(',', '.'))
+                v_total = float(m_full.group(4).replace('.', '').replace(',', '.'))
+                fields["itens"].append({
+                    "descricao": desc.strip(),
+                    "quantidade": qtd,
+                    "valor_unitario": v_unit,
+                    "valor_total": v_total
+                })
+                i += 1
+                continue
+
+            # Caso 2: Linha puramente com quantidade e valores (descrição antes e/ou depois)
+            m_num = re.search(r'^(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$', line)
+            if m_num:
+                desc_parts = list(pending_lines)
+                pending_lines = []
+
+                if not desc_parts and i > 0 and not re.search(r'R\$\s*[\d\.,]+', lines[i-1]):
+                    desc_parts.append(lines[i-1])
+
+                if i + 1 < len(lines) and not re.search(r'R\$\s*[\d\.,]+', lines[i+1]):
+                    desc_parts.append(lines[i+1])
+                    i += 1  # consome a próxima linha
+
+                desc_final = ' '.join(desc_parts).strip()
+                qtd = int(m_num.group(1))
+                v_unit = float(m_num.group(2).replace('.', '').replace(',', '.'))
+                v_total = float(m_num.group(3).replace('.', '').replace(',', '.'))
+                fields["itens"].append({
+                    "descricao": desc_final,
+                    "quantidade": qtd,
+                    "valor_unitario": v_unit,
+                    "valor_total": v_total
+                })
+                i += 1
+                continue
+
+            pending_lines.append(line)
+            i += 1
+
+    # Fallback caso m_block não tenha identificado itens
+    if not fields["itens"]:
+        lines = text.splitlines()
+        pending_desc = ""
+        for line in lines:
+            line_clean = line.strip()
+            if not line_clean:
+                continue
+            item_match = re.search(r"^(.+?)\s+(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line_clean)
+            if item_match:
+                desc = item_match.group(1).strip()
+                if pending_desc:
+                    desc = f"{pending_desc} {desc}".strip()
+                    pending_desc = ""
+                qtd = int(item_match.group(2))
+                v_unit = float(item_match.group(3).replace('.', '').replace(',', '.'))
+                v_total = float(item_match.group(4).replace('.', '').replace(',', '.'))
+                fields["itens"].append({
+                    "descricao": desc,
+                    "quantidade": qtd,
+                    "valor_unitario": v_unit,
+                    "valor_total": v_total
+                })
+                continue
+            multi_match = re.search(r"^(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line_clean)
+            if multi_match and pending_desc:
+                qtd = int(multi_match.group(1))
+                v_unit = float(multi_match.group(2).replace('.', '').replace(',', '.'))
+                v_total = float(multi_match.group(3).replace('.', '').replace(',', '.'))
+                fields["itens"].append({
+                    "descricao": pending_desc.strip(),
+                    "quantidade": qtd,
+                    "valor_unitario": v_unit,
+                    "valor_total": v_total
+                })
                 pending_desc = ""
-            qtd = int(item_match.group(2))
-            v_unit = float(item_match.group(3).replace('.', '').replace(',', '.'))
-            v_total = float(item_match.group(4).replace('.', '').replace(',', '.'))
-            fields["itens"].append({
-                "descricao": desc,
-                "quantidade": qtd,
-                "valor_unitario": v_unit,
-                "valor_total": v_total
-            })
-            continue
-
-        # Caso 2: Linha apenas com Quantidade e Valores (descrição estava na linha anterior)
-        multi_match = re.search(r"^(\d+)\s+R\$\s*([\d\.,]+)\s+R\$\s*([\d\.,]+)$", line_clean)
-        if multi_match and pending_desc:
-            qtd = int(multi_match.group(1))
-            v_unit = float(multi_match.group(2).replace('.', '').replace(',', '.'))
-            v_total = float(multi_match.group(3).replace('.', '').replace(',', '.'))
-            fields["itens"].append({
-                "descricao": pending_desc.strip(),
-                "quantidade": qtd,
-                "valor_unitario": v_unit,
-                "valor_total": v_total
-            })
-            pending_desc = ""
-            continue
-
-        # Cabeçalhos e rodapés da tabela limpam o buffer
-        upper_line = line_clean.upper()
-        if "ITENS DA NOTA" in upper_line or "DESCRIÇÃO" in upper_line or "VALOR TOTAL" in upper_line or "OBSERVAÇÕES" in upper_line:
-            pending_desc = ""
-            continue
-
-        # Se for texto continuado entre itens
-        if fields["itens"] and not pending_desc and "DOCUMENTO" not in upper_line and "PÁGINA" not in upper_line:
-            fields["itens"][-1]["descricao"] = f"{fields['itens'][-1]['descricao']} {line_clean}".strip()
-        else:
+                continue
+            upper_line = line_clean.upper()
+            if "ITENS DA NOTA" in upper_line or "DESCRIÇÃO" in upper_line or "VALOR TOTAL" in upper_line:
+                pending_desc = ""
+                continue
             pending_desc = f"{pending_desc} {line_clean}".strip() if pending_desc else line_clean
 
     return fields
