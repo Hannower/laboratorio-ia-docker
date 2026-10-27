@@ -137,6 +137,91 @@ INVOICES = [
         ],
         "valor_total": 13220.00,
         "observacoes": "Itens de copa e conveniencia destinados ao espaco de convivencia e hackathons do Laboratorio de IA."
+    },
+    {
+        "filename": "Nota Fiscal 10009.pdf",
+        "numero_nota": "NF-001009",
+        "data_emissao": "10/03/2026",
+        "fornecedor": "Hardware & Cloud Tech Ltd",
+        "cnpj": "12.345.678/0001-90",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Servidor GPU Dedicated AI Processing Unit (A100)", 2, 12500.00, 25000.00),
+            ("Unidade de Armazenamento NVMe High-Speed 4TB", 5, 1850.00, 9250.00),
+            ("Módulo de Memória RAM 64GB DDR5 ECC", 8, 1400.00, 11200.00),
+            ("Suporte Técnico Especializado em Infraestrutura RAG", 1, 4500.00, 4500.00),
+        ],
+        "valor_total": 49950.00,
+        "observacoes": "Equipamentos de alto desempenho para treinamento e inferência de modelos de IA no laboratório."
+    },
+    {
+        "filename": "Nota Fiscal 10010.pdf",
+        "numero_nota": "NF-001010",
+        "data_emissao": "12/03/2026",
+        "fornecedor": "SaaS Cloud & Vector Solutions S.A.",
+        "cnpj": "23.456.789/0001-01",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Assinatura Anual Banco de Dados Vetorial Gerenciado (Enterprise)", 1, 18000.00, 18000.00),
+            ("Pacote de Tokens para Modelos de Embeddings (1 Bilhão de Tokens)", 2, 4200.00, 8400.00),
+            ("Créditos de Processamento LLM para Reranking de Busca", 5, 1500.00, 7500.00),
+            ("Consultoria de Otimização de Indexação Vetorial HNSW", 1, 5800.00, 5800.00),
+        ],
+        "valor_total": 39700.00,
+        "observacoes": "Contratação de serviços em nuvem, banco de dados vetorial em cluster redundante e consumo de APIs."
+    },
+    {
+        "filename": "Nota Fiscal 10011.pdf",
+        "numero_nota": "NF-001011",
+        "data_emissao": "18/03/2026",
+        "fornecedor": "Centro de Treinamento e Eventos Tech Brasil",
+        "cnpj": "34.567.890/0001-12",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Inscrição do Corpo Docente no Bootcamp Avançado de Agentes RAG", 10, 1200.00, 12000.00),
+            ("Workshop Prático: Avaliação e Métricas de RAG (RAGAS / TruLens)", 1, 4500.00, 4500.00),
+            ("Material Didático Exclusivo e Códigos Fonte de Exemplo", 10, 250.00, 2500.00),
+            ("Certificação Oficial em Engenharia de Busca Semântica", 10, 350.00, 3500.00),
+        ],
+        "valor_total": 22500.00,
+        "observacoes": "Capacitação técnica corporativa do corpo docente para atualização do currículo acadêmico."
+    },
+    {
+        "filename": "Nota Fiscal 10012.pdf",
+        "numero_nota": "NF-001012",
+        "data_emissao": "22/03/2026",
+        "fornecedor": "SoftDev & Data Integration Consultoria",
+        "cnpj": "56.789.012/0001-34",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Desenvolvimento do Portal de RAG Acadêmico Personalizado", 1, 15000.00, 15000.00),
+            ("Módulo de Ingestão Automática e Chunks Dinâmicos de PDFs", 1, 6200.00, 6200.00),
+            ("Integração de Interface Multimodal com Suporte a Audio e Texto", 1, 8500.00, 8500.00),
+            ("Manutenção Preventiva e Atualizações do Sistema (Trimestral)", 1, 3000.00, 3000.00),
+        ],
+        "valor_total": 32700.00,
+        "observacoes": "Desenvolvimento sob demanda e integração da plataforma de pesquisa bibliográfica interna."
+    },
+    {
+        "filename": "Nota Fiscal 10013.pdf",
+        "numero_nota": "NF-001013",
+        "data_emissao": "25/03/2026",
+        "fornecedor": "CyberGuard Security & Compliance Audit",
+        "cnpj": "67.890.123/0001-45",
+        "cliente": "Escola e Faculdade Teophilo RAG Edu",
+        "cliente_cnpj": "98.765.432/0001-10",
+        "itens": [
+            ("Auditoria de Segurança e Mitigação de Prompt Injection em RAG", 1, 9800.00, 9800.00),
+            ("Implementação de Camada de Privacidade e Guardrails LGPD", 1, 7500.00, 7500.00),
+            ("Pentest em APIs e Pipeline de Vetores de Informação", 1, 5400.00, 5400.00),
+            ("Relatório Técnico de Vulnerabilidades e Recomendações", 1, 2100.00, 2100.00),
+        ],
+        "valor_total": 24800.00,
+        "observacoes": "Serviços especializados de auditoria de segurança da informação e conformidade com a LGPD."
     }
 ]
 
@@ -289,4 +374,4 @@ if __name__ == "__main__":
     for inv in INVOICES:
         path = os.path.join(out_dir, inv["filename"])
         generate_pdf(inv, path)
-    print(f"Todos os 4 PDFs fictícios foram criados em {out_dir} com sucesso!")
+    print(f"Todos os {len(INVOICES)} PDFs fictícios foram criados em {out_dir} com sucesso!")
