@@ -1,0 +1,110 @@
+{
+  "name": "Pipeline Didático RAG - Ingestão Automática",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e4c7674e-561b-4171-a461-ea60655d9d74",
+      "name": "Disparo Manual (Teste)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "triggerOn": "folder",
+        "path": "/data/documentos/raw",
+        "events": [
+          "add"
+        ],
+        "options": {
+          "awaitWriteFinish": true
+        }
+      },
+      "id": "1c7a840e-749e-4363-8a39-38b463286f05",
+      "name": "Local File Trigger (/raw)",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://rag-backend:8000/api/ingest/default-invoices",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "base_id",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "27dbd281-2297-4b72-8869-d40b1574a4cf",
+      "name": "Chamar API RAG Ingest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 Pipeline de Ingestão Contínua de Documentos\n\n1. **Gatilho Automático:** Observa a pasta `/data/documentos/raw` (montada do host).\n2. **Gatilho Manual:** Permite executar o teste com 1 clique direto no botão *Test step*.\n3. **API RAG:** Chama o serviço `http://rag-backend:8000/api/ingest/default-invoices` na rede Docker.\n4. **Promoção de Arquivos:** O backend fatiará, criará os embeddings, salvará no Supabase e moverá o arquivo para `/data/documentos/gold`.",
+        "height": 260,
+        "width": 520
+      },
+      "id": "766a5d12-1672-4d51-9bf5-c54d1ceb2772",
+      "name": "Nota Didática",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -60
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Disparo Manual (Teste)": {
+      "main": [
+        [
+          {
+            "node": "Chamar API RAG Ingest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local File Trigger (/raw)": {
+      "main": [
+        [
+          {
+            "node": "Chamar API RAG Ingest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d0442345-5f65-4f76-8809-5b6510793664",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "laboratorio-ia-docker"
+  },
+  "tags": []
+}
